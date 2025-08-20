@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+model Categoria {
+  id       Int     @id @default(autoincrement())
+  nome     String  @db.VarChar(50)
+  bolos    Bolo[]
+  @@map("categorias")
+}
+
+model Bolo {
+  id          Int        @id @default(autoincrement())
+  nome        String     @db.VarChar(50)
+  descricao   String?
+  preco       Decimal    @db.Decimal(10, 2)
+  pesoKg      Float
+  foto        String
+  sabor       Sabor      @default(CHOCOLATE)
+  tamanho     Tamanho    @default(MEDIO)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt()
+  destaque    Boolean    @default(false)
+  categoria   Categoria  @relation(fields: [categoriaId], references: [id])
+  categoriaId Int
+  vendas      Venda[]
+  @@map("bolos")
+}
+
+model Cliente {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(100)
+  email     String   @unique
+  telefone  String?  @db.VarChar(20)
+  endereco  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  vendas    Venda[]
+  @@map("clientes")
+}
+
+model Funcionario {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(100)
+  cargo     String   @db.VarChar(50) 
+  email     String   @unique
+  telefone  String?  @db.VarChar(20)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  vendas    Venda[]
+  @@map("funcionarios")
+}
+
+model Venda {
+  id            Int         @id @default(autoincrement())
+  quantidade    Int
+  valorTotal    Decimal     @db.Decimal(10, 2)
+  dataVenda     DateTime    @default(now())
+
+  cliente       Cliente     @relation(fields: [clienteId], references: [id])
+  clienteId     Int
+
+  funcionario   Funcionario @relation(fields: [funcionarioId], references: [id])
+  funcionarioId Int
+
+  bolo          Bolo        @relation(fields: [boloId], references: [id])
+  boloId        Int
+
+  @@map("vendas")
+}
+
+enum Sabor {
+  CHOCOLATE
+  BAUNILHA
+  MORANGO
+  LIMAO
+  DOCE_DE_LEITE
+  RED_VELVET
+  CENOURA
+}
+
+enum Tamanho {
+  PEQUENO
+  MEDIO
+  GRANDE
+}
