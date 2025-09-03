@@ -1,84 +1,38 @@
-import { PrismaClient } from '@prisma/client'
-import { Router } from 'express'
-import { z } from 'zod'
+import { Router } from "express";
+import { prisma } from "../prisma";
+import { registerClienteSchema, loginClienteSchema } from "../schemas/clienteSchema";
+import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient()
-const router = Router()
+const router = Router();
 
-// Validação dos dados do cliente
-const clienteSchema = z.object({
-  nome: z.string().min(3, { message: "Nome deve possuir, no mínimo, 3 caracteres" }),
-  email: z.string().email({ message: "Email inválido" }),
-  telefone: z.string().nullable().optional(),
-  endereco: z.string().nullable().optional()
-})
-
-// Listar todos os clientes
-router.get("/", async (req, res) => {
+// Cadastro
+router.post("/register", async (req, res) => {
   try {
-    const clientes = await prisma.cliente.findMany({
-      include: { vendas: true }
-    })
-    res.status(200).json(clientes)
-  } catch (error) {
-    res.status(500).json({ erro: error })
-  }
-})
-
-// Criar cliente
-router.post("/", async (req, res) => {
-  const valida = clienteSchema.safeParse(req.body)
-  if (!valida.success) {
-    res.status(400).json({ erro: valida.error })
-    return
-  }
-
-  const { nome, email, telefone = null, endereco = null } = valida.data
-
-  try {
+    const data = registerClienteSchema.parse(req.body);
+    const hashedPassword = await bcrypt.hash(data.senha, 10);
     const cliente = await prisma.cliente.create({
-      data: { nome, email, telefone, endereco }
-    })
-    res.status(201).json(cliente)
-  } catch (error) {
-    res.status(400).json({ error })
+      data: { ...data, senha: hashedPassword },
+    });
+    res.json({ id: cliente.id, nome: cliente.nome, email: cliente.email });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-})
+});
 
-// Deletar cliente
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params
+// Login
+router.post("/login", async (req, res) => {
   try {
-    const cliente = await prisma.cliente.delete({
-      where: { id: Number(id) }
-    })
-    res.status(200).json(cliente)
-  } catch (error) {
-    res.status(400).json({ erro: error })
+    const data = loginClienteSchema.parse(req.body);
+    const cliente = await prisma.cliente.findUnique({ where: { email: data.email } });
+    if (!cliente) return res.status(400).json({ error: "Email ou senha incorretos" });
+
+    const passwordMatch = await bcrypt.compare(data.senha, cliente.senha);
+    if (!passwordMatch) return res.status(400).json({ error: "Email ou senha incorretos" });
+
+    res.json({ id: cliente.id, nome: cliente.nome, email: cliente.email });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-})
+});
 
-// Atualizar cliente
-router.put("/:id", async (req, res) => {
-  const { id } = req.params
-
-  const valida = clienteSchema.safeParse(req.body)
-  if (!valida.success) {
-    res.status(400).json({ erro: valida.error })
-    return
-  }
-
-  const { nome, email, telefone, endereco } = valida.data
-
-  try {
-    const cliente = await prisma.cliente.update({
-      where: { id: Number(id) },
-      data: { nome, email, telefone, endereco }
-    })
-    res.status(200).json(cliente)
-  } catch (error) {
-    res.status(400).json({ error })
-  }
-})
-
-export default router
+export default router;

@@ -36,6 +36,7 @@ model Cliente {
   id        Int      @id @default(autoincrement())
   nome      String   @db.VarChar(100)
   email     String   @unique
+  senha     String   @db.VarChar(255)
   telefone  String?  @db.VarChar(20)
   endereco  String?
   createdAt DateTime @default(now())
