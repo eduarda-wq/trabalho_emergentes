@@ -32,7 +32,6 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Ações do usuário */}
           <div className="flex items-center mr-10">
             
             {user ? (
