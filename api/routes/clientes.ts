@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { prisma } from "../prisma";
-import { registerClienteSchema, loginClienteSchema } from "../schemas/clienteSchema";
+import { loginClienteSchema, registerClienteSchema } from "../schemas/clienteSchema"
 import bcrypt from "bcryptjs";
+import prisma from "../prisma";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
-// Cadastro
 router.post("/register", async (req, res) => {
   try {
     const data = registerClienteSchema.parse(req.body);
@@ -19,7 +19,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login
 router.post("/login", async (req, res) => {
   try {
     const data = loginClienteSchema.parse(req.body);
@@ -29,7 +28,12 @@ router.post("/login", async (req, res) => {
     const passwordMatch = await bcrypt.compare(data.senha, cliente.senha);
     if (!passwordMatch) return res.status(400).json({ error: "Email ou senha incorretos" });
 
-    res.json({ id: cliente.id, nome: cliente.nome, email: cliente.email });
+    const token = jwt.sign(
+      { id: cliente.id, email: cliente.email },
+      process.env.JWT_SECRET || "default_secret",
+      { expiresIn: "1h" }
+    );
+    res.json({ id: cliente.id, nome: cliente.nome, email: cliente.email, token });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

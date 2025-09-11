@@ -24,3 +24,13 @@ export const getBoloById = async (id: number) => {
   const res = await api.get<Bolo>(`/bolos/${id}`);
   return { ...res.data, preco: Number(res.data.preco) };
 };
+
+export const getBolosDestaques = async (): Promise<Bolo[]> => {
+  const res = await api.get<Bolo[]>("/bolos/destaques");
+  return res.data.map(b => ({ ...b, preco: Number(b.preco) }));
+};
+
+export const getBolosUltimos = async (): Promise<Bolo[]> => {
+  const res = await api.get<Bolo[]>("/bolos/ultimos");
+  return res.data.map(b => ({ ...b, preco: Number(b.preco) }));
+};

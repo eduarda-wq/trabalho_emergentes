@@ -50,6 +50,7 @@ model Funcionario {
   nome      String   @db.VarChar(100)
   cargo     String   @db.VarChar(50) 
   email     String   @unique
+  senha     String   @db.VarChar(255)   
   telefone  String?  @db.VarChar(20)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()

@@ -1,5 +1,5 @@
-import { Card, Button } from "flowbite-react";
 import type { Bolo } from "../services/boloService";
+import { Card, Button } from "flowbite-react";
 
 const saborMap: Record<string, string> = {
   CHOCOLATE: "Chocolate",
@@ -17,16 +17,27 @@ const tamanhoMap: Record<string, string> = {
   GRANDE: "Grande",
 };
 
-export default function ProductCard({ nome, descricao, preco, foto, sabor, tamanho, categoria }: Bolo) {
+export default function ProductCard(props: Bolo) {
+  const { nome, descricao, preco, foto, sabor, tamanho, categoria } = props;
   return (
-    <Card imgSrc={foto} className="max-w-sm">
-      <h5 className="text-xl font-bold">{nome}</h5>
-      <p>{descricao}</p>
-      <p className="text-gray-500 text-sm">Categoria: {categoria.nome}</p>
-      <p className="text-gray-500 text-sm">Sabor: {saborMap[sabor]}</p>
-      <p className="text-gray-500 text-sm">Tamanho: {tamanhoMap[tamanho]}</p>
-      <p className="text-pink-600 font-semibold">R$ {preco.toFixed(2)}</p>
-      <Button>Adicionar</Button>
+    <Card
+      imgSrc={foto}
+      className="max-w-sm rounded-2xl shadow-md hover:shadow-lg transition p-4 bg-amber-50"
+    >
+      <h5 className="text-xl font-serif font-bold mb-2 text-amber-900">{nome}</h5>
+      <p className="text-sm text-amber-800 mb-1">{descricao}</p>
+      <p className="text-xs text-amber-700">Categoria: {categoria?.nome}</p>
+      <p className="text-xs text-amber-700">Sabor: {saborMap[sabor] ?? sabor}</p>
+      <p className="text-xs text-amber-700">Tamanho: {tamanhoMap[tamanho] ?? tamanho}</p>
+      <p className="text-lg font-semibold text-amber-900 mt-2 mb-4">
+        R$ {Number(preco).toFixed(2)}
+      </p>
+      <Button
+        color="light"
+        className="w-full bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 hover:text-amber-950 transition"
+      >
+        Adicionar
+      </Button>
     </Card>
   );
 }
